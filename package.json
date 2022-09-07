@@ -1,0 +1,27 @@
+{
+  "name": "@walcu-engineering/pathhaschanged",
+  "version": "1.0.0",
+  "description": "Function that returns a boolean if the given path has changed",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Walcu-Engineering/pathHasChanged.git"
+  },
+  "author": "Jose García Lozano",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Walcu-Engineering/pathHasChanged/issues"
+  },
+  "homepage": "https://github.com/Walcu-Engineering/pathHasChanged#readme",
+  "devDependencies": {
+    "jest": "^29.0.2"
+  },
+  "dependencies": {
+    "@walcu-engineering/getpathvalue": "^1.0.0",
+    "@walcu-engineering/isancestor": "^1.0.0",
+    "@walcu-engineering/isjsonpointer": "^1.0.0"
+  }
+}
