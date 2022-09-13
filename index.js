@@ -46,9 +46,7 @@ const pathHasChanged = (doc = {}, changes = [], path = '') => {
     //is /d/e/f' that path does not exist in old value, so we need a mechanism
     //that given that path returns undefined.
     const old_subpath_value = getPathValue(ancestor_change.old_value, subpath);
-    if(old_subpath_value === undefined) return false; // this means that the requested subpath is not present in the old value, so that subpath has not changed
-    //If we reach this line means that the subpath was present in the old value,
-    //so we have to compare the old value with the current one to determine if
+    //Now we have to compare the old value with the current one to determine if
     //the value has changed or not.
     const current_nested_value = getPathValue(doc, path);
     return !util.isDeepStrictEqual(current_nested_value, old_subpath_value);
