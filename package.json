@@ -1,6 +1,6 @@
 {
   "name": "@walcu-engineering/pathhaschanged",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Function that returns a boolean if the given path has changed",
   "main": "index.js",
   "scripts": {
