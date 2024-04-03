@@ -4,6 +4,14 @@ const changed_customer = {
   name: 'Test name',
   surname: 'Test surname',
   theundefined: 'some value',
+  nested: {
+    nested: 'Hello',
+    nested2: 'Bye2',
+  },
+  nested2: {
+    nested: '2Bye',
+    nested2: '2Hello2',
+  },
   contacts: [{
     name: 'Test contact 0 name',
     phones: ['Test contact 0 phone 0', 'Test contact 0 phone 1'],
@@ -20,6 +28,8 @@ const diffs = [
   {path: '/contacts/0', old_value: {name: 'old contact name', phones: ['old phone 1', 'old phone 2'], emails: ['old email 1', 'old email 2']}},
   {path: '/contacts/1/phones/1', old_value: 'contact 1 old phone 1'},
   {path: '/contacts/1/emails', old_value: ['contact 1 old email 0', 'Test contact 1 email 1']},
+  {path: '/nested/nested2', old_value: 'Hello2'},
+  {path: '/nested2', old_value: { nested: '2Hello', nested2: '2Hello2' }},
 ]
 
 describe('pathHasChanged', () => {
@@ -38,4 +48,23 @@ describe('pathHasChanged', () => {
   test('Check a path that does not exist, should return false', () => {
     expect(pathHasChanged(changed_customer, diffs, '/this/path/does/not/exist')).toBe(false);
   });
+  test('Nested path has changed', () => {
+    expect(pathHasChanged(changed_customer, diffs, '/nested')).toBe(true);
+  });
+  test('Nested.nested path has changed', () => {
+    expect(pathHasChanged(changed_customer, diffs, '/nested/nested')).toBe(false);
+  });
+  test('Nested.nested2 path has not changed', () => {
+    expect(pathHasChanged(changed_customer, diffs, '/nested/nested2')).toBe(true);
+  });
+  test('Nested2 path has changed', () => {
+    expect(pathHasChanged(changed_customer, diffs, '/nested2')).toBe(true);
+  });
+  test('Nested.nested path has changed', () => {
+    expect(pathHasChanged(changed_customer, diffs, '/nested2/nested')).toBe(true);
+  });
+  test('Nested.nested2 path has not changed', () => {
+    expect(pathHasChanged(changed_customer, diffs, '/nested2/nested2')).toBe(false);
+  });
+
 });

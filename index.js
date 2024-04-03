@@ -38,7 +38,7 @@ const pathHasChanged = (doc = {}, changes = [], path = '') => {
     //'/d/e'. So we have to extract the subpath from the requested path.
     //In the case where the ancestor change is for the root path (''),
     //then we have to keep the requested path
-    const subpath = ancestor_change.path ? path.split(ancestor_change.path)[1] : path;
+    const subpath = ancestor_change.path ? path.slice(ancestor_change.path.length) : path;
     //Once we have the subpath, we have to read the old value, and we need
     //a function in order to achieve this because we have to take into
     //account this scenario:
