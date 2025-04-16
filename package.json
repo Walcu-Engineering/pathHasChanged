@@ -1,6 +1,6 @@
 {
   "name": "@walcu-engineering/pathhaschanged",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Function that returns a boolean if the given path has changed",
   "main": "index.js",
   "scripts": {
@@ -20,7 +20,7 @@
     "jest": "^29.0.2"
   },
   "dependencies": {
-    "@walcu-engineering/getpathvalue": "^1.1.0",
+    "@walcu-engineering/getpathvalue": "^1.2.0",
     "@walcu-engineering/isancestor": "^1.1.0",
     "@walcu-engineering/isjsonpointer": "^1.1.0"
   }
