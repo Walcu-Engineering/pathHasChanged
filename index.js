@@ -3,6 +3,20 @@ const getPathValue  = require('@walcu-engineering/getpathvalue');
 const isJsonPointer = require('@walcu-engineering/isjsonpointer');
 const isAncestor    = require('@walcu-engineering/isancestor');
 
+const splitPath = (path = '') => path.split('/').slice(1);
+
+const transformChanges = (changes, path) => changes.map(change => {
+  const splitted_path = splitPath(change.path);
+  const is_equal = splitted_path.map((p, i) => !path[i] || path[i] === '-' || p === path[i]).every(x => x);
+  if (!is_equal) return null;
+  const new_path = '/' + splitted_path.map((p, i) => {
+    if (!path[i]) return p;
+    if (path[i] === '-') return '-';
+    return p;
+  }).join('/')
+  return Object.assign({}, change, { path: new_path });
+}).filter(x => x);
+
 /**
  * Given a change to the path '/a/b', if the pathHasChanged function is called
  * for the path 'a/b/c/d' we cannot determine if that path has actually
@@ -16,16 +30,26 @@ const isAncestor    = require('@walcu-engineering/isancestor');
  *
  * @param path: String with the format JSON pointer as defined in RFC6901
  */
-const pathHasChanged = (doc = {}, changes = [], path = '') => {
-  if(!isJsonPointer(path)){
+const pathHasChanged = (doc = {}, changes = [], path = '', options = {}) => {
+  if (!isJsonPointer(path)) {
     throw new Error(`${path} is not a JSON pointer path`);
   }
-  const exact_change = changes.find(change => change.path === path); //This should be the most common case
-  if(exact_change) return true;
+
+  const {
+    handle_array_paths = false,
+  } = options;
+
+  const splitted_path = splitPath(path);
+  const transformed_changes = handle_array_paths
+    ? transformChanges(changes, splitted_path)
+    : changes;
+
+  const exact_change = transformed_changes.find(change => change.path === path); //This should be the most common case
+  if (exact_change) return true;
   //Ok, we are not lucky so we have to check if there is any change whose's
   //path is an ancestor for the requested path. Example change's path is /a/b
   //and the requested path is /a/b/c
-  const ancestor_changes = changes.filter(change => isAncestor(change.path, path));
+  const ancestor_changes = transformed_changes.filter(change => isAncestor(change.path, path));
   //If there are several changes that affect to ancestors, we have to check
   //all the changes because if the nearest ancestor has not the change, it
   //does not mean that another change that is a farther ancestor includes
@@ -45,13 +69,13 @@ const pathHasChanged = (doc = {}, changes = [], path = '') => {
     //old value for path '/a/b/c' is {d: {e: 1}}; but the requested subpath
     //is /d/e/f' that path does not exist in old value, so we need a mechanism
     //that given that path returns undefined.
-    const old_subpath_value = getPathValue(ancestor_change.old_value, subpath);
+    const old_subpath_value = getPathValue(ancestor_change.old_value, subpath, options);
     //Now we have to compare the old value with the current one to determine if
     //the value has changed or not.
-    const current_nested_value = getPathValue(doc, path);
+    const current_nested_value = getPathValue(doc, path, options);
     return !util.isDeepStrictEqual(current_nested_value, old_subpath_value);
   });
-  if(ancestor_changes_have_affected_to_path) return true//This is a shortcut to avoid the next calculations
+  if (ancestor_changes_have_affected_to_path) return true//This is a shortcut to avoid the next calculations
   //now we have to ckeck the other case, this means that the requested path
   //is longer than the change's path. Example, change's path is /a/b/c/d
   //but the requested path is /a/b. In this case the path /a/b has changed
@@ -60,8 +84,8 @@ const pathHasChanged = (doc = {}, changes = [], path = '') => {
   //value given to /a/b/c/d was the same value than the previous value given to
   //that path. So we are doomed to check the equality aswel, like in the first
   //conditional
-  const descendant_changes = changes.filter(change => isAncestor(path, change.path));
-  if(descendant_changes.length > 0){//there are changes that are descendants of the requested path
+  const descendant_changes = transformed_changes.filter(change => isAncestor(path, change.path));
+  if (descendant_changes.length > 0) {//there are changes that are descendants of the requested path
     return descendant_changes.some(descendant_change => {
       //Now the old_value of the descendant_change is where we have to
       //check if the value has changed or not, comparing it to the
@@ -70,7 +94,7 @@ const pathHasChanged = (doc = {}, changes = [], path = '') => {
       //it with the old_value to ensure that the change's value has actually changed
       //And this has to be made this way because it is nearly impossible to read
       //the new value given to a path inside the Proxy.
-      const current_value_of_change_path = getPathValue(doc, descendant_change.path);
+      const current_value_of_change_path = getPathValue(doc, descendant_change.path, options);
       return !util.isDeepStrictEqual(current_value_of_change_path, descendant_change.old_value);
     });
   }
